@@ -12,14 +12,14 @@ class QTest < Test::Unit::TestCase
     q.connect
     
     puts "how many?"
-    total = gets.to_i
+    total = gets.to_i-1
     for index in 0..total
       q.post("channel1", "ruby test #{index}")
     end
     
     received = 0
     q.worker("channel1") do |data| 
-      sleep 0.02
+      #sleep 0.02
       received = received+1
       puts "ruby worker received #{data}"
     end
@@ -32,6 +32,6 @@ class QTest < Test::Unit::TestCase
     q.disconnect  
   
   end
-
+  
   
 end

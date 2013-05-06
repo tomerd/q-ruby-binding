@@ -6,14 +6,15 @@ module Qlib
   ffi_lib 'libq'
   #ffi_convention :stdcall
   
-  callback :worker_delegate, [ :pointer ], :void
+  #callback :worker_delegate, [ :pointer ], :void
   callback :observer_delegate, [ :pointer ], :void
     
   attach_function :q_version, :q_version, [ ], :string
   attach_function :q_connect, :q_connect, [ :pointer, :string ], :void
   attach_function :q_disconnect, :q_disconnect, [ :pointer ], :void
   attach_function :q_post, :q_post, [ :pointer, :string, :string, :long, :pointer ], :void
-  attach_function :q_worker, :q_worker, [ :pointer, :string, :worker_delegate ], :void
+  #attach_function :q_worker, :q_worker, [ :pointer, :string, :worker_delegate ], :void
+  attach_function :q_worker, :q_worker, [ :pointer, :string, :pointer ], :void
   attach_function :q_observer, :q_observer, [ :pointer, :string, :observer_delegate ], :void
   
 end
@@ -21,8 +22,12 @@ end
 module Q
   class Q::Q
     
-    @pq = nil
-    
+    def initialize
+      @pq = nil
+      @workers = []
+      @observers = []
+    end
+        
     def version
       Qlib::q_version
     end
@@ -39,6 +44,8 @@ module Q
       return if !@pq
       Qlib::q_disconnect(@pq)
       @pq = nil
+      @workers = []
+      @observers = []
     end
     
     def post(channel, data)
@@ -59,14 +66,24 @@ module Q
       throw "q disconnected" if !@pq
       throw "invalid arguments" if !channel
       throw "invalid arguments" if !delegate
-      Qlib::q_worker(@pq, channel) { |pdata| delegate.call(pdata.read_pointer.read_string) }
+      #Qlib::q_worker(@pq, channel) { |pdata| delegate.call(pdata.read_pointer.read_string) }
+      worker =  FFI::Function.new(:void, [:pointer]) do |pdata|
+        delegate.call(pdata.read_pointer.read_string)
+      end
+      @workers << worker
+      Qlib::q_worker(@pq, channel, worker)
     end
     
     def observer(channel, &delegate)
       throw "q disconnected" if !@pq
       throw "invalid arguments" if !channel
       throw "invalid arguments" if !delegate      
-      Qlib::q_observer(@pq, channel) { |pdata| delegate.call(pdata.read_pointer.read_string) }      
+      #Qlib::q_observer(@pq, channel) { |pdata| delegate.call(pdata.read_pointer.read_string) }
+      observer =  FFI::Function.new(:void, [:pointer]) do |pdata|
+        delegate.call(pdata.read_pointer.read_string)
+      end
+      @observers << observer
+      Qlib::q_observer(@pq, channel, observer)
     end
     
   end
