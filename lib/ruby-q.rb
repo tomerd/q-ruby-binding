@@ -1,4 +1,5 @@
 require 'ffi'
+require 'json'
 
 module Qlib
   extend FFI::Library
@@ -12,15 +13,70 @@ module Qlib
   attach_function :q_version, :q_version, [ ], :string
   attach_function :q_connect, :q_connect, [ :pointer, :string ], :void
   attach_function :q_disconnect, :q_disconnect, [ :pointer ], :void
-  attach_function :q_post, :q_post, [ :pointer, :string, :string, :long, :pointer ], :void
+  attach_function :q_post, :q_post, [ :pointer, :string, :string, :string, :long, :pointer ], :void
+  attach_function :q_update, :q_update, [ :pointer, :string, :long ], :bool
+  attach_function :q_remove, :q_remove, [ :pointer, :string ], :bool
   #attach_function :q_worker, :q_worker, [ :pointer, :string, :worker_delegate ], :void
   attach_function :q_worker, :q_worker, [ :pointer, :string, :pointer ], :void
   attach_function :q_observer, :q_observer, [ :pointer, :string, :observer_delegate ], :void
+  attach_function :q_flush, :q_flush, [ :pointer ], :void
   
 end
 
 module Q
-  class Q::Q
+  
+  class Job
+    
+    def initialize *args
+      case args.size
+        when 1
+          init1 *args
+        when 2
+          init2 *args
+        when 3
+          init3 *args
+        else
+          error
+      end
+    end
+    
+    def init1(data)
+      @uid = nil
+      @data = data
+      @run_at = 0
+    end
+    
+    def init2(data, run_at)
+      @uid = nil
+      @data = data
+      @run_at = run_at
+    end
+    
+    def init3(uid, data, run_at)
+      @uid = uid
+      @data = data
+      @run_at = run_at
+    end
+    
+    def uid 
+      @uid
+    end
+    
+    def data 
+      @data
+    end
+    
+    def run_at 
+      @run_at
+    end
+    
+    def valid?
+      !@data.nil?
+    end
+      
+  end
+  
+  class Q
     
     def initialize
       @pq = nil
@@ -35,6 +91,7 @@ module Q
     def connect(config=nil)
       throw "already connected" if @pq
       pq = FFI::MemoryPointer.new(:pointer)
+      config = config.to_json if config && config.is_a?(Hash)
       Qlib::q_connect(pq, config)
       @pq = FFI::MemoryPointer.new(:pointer)
       @pq = pq.read_pointer
@@ -48,18 +105,27 @@ module Q
       @observers = []
     end
     
-    def post(channel, data)
-      post_at(channel, data, 0)
-    end
-    
-    def post_at(channel, data, at)
+    def post(channel, job)
       throw "q disconnected" if !@pq
       throw "invalid arguments" if !channel
-      throw "invalid arguments" if !data
-      at = (at || 0) / 1000  
+      throw "invalid arguments" if !job || !job.valid?
       puid = FFI::MemoryPointer.new(:pointer)
-      Qlib::q_post(@pq, channel, data, at, puid)
-      return puid.read_pointer.read_string
+      run_at = job.run_at ? job.run_at.to_i : 0
+      Qlib::q_post(@pq, channel, job.uid, job.data, run_at, puid)
+      puid.read_pointer.read_string
+    end
+    
+    def update(uid, run_at)
+      throw "q disconnected" if !@pq
+      throw "invalid arguments" if !uid
+      run_at = run_at ? run_at.to_i : 0
+      Qlib::q_update(@pq, uid, run_at)
+    end
+    
+    def remove(uid)
+      throw "q disconnected" if !@pq
+      throw "invalid arguments" if !uid
+      Qlib::q_remove(@pq, uid)
     end
     
     def worker(channel, &delegate)
@@ -84,6 +150,12 @@ module Q
       end
       @observers << observer
       Qlib::q_observer(@pq, channel, observer)
+    end
+    
+    # careful, flushes the queue!
+    def flush
+      throw "q disconnected" if !@pq
+      Qlib::q_flush(@pq)
     end
     
   end
