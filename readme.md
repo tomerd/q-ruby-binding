@@ -27,7 +27,7 @@ https://github.com/tomerd/q
     puts "how many?"
     total = gets.to_i
     for index in 0..total
-      q.post("channel1", "ruby test #{index}")
+      q.post("channel1", Q::Job.new("ruby test #{index}"))
     end
     
     received = 0
