@@ -14,8 +14,8 @@ module Qlib
   attach_function :q_connect, :q_connect, [ :pointer, :string ], :void
   attach_function :q_disconnect, :q_disconnect, [ :pointer ], :void
   attach_function :q_post, :q_post, [ :pointer, :string, :string, :string, :long, :pointer ], :void
-  attach_function :q_update, :q_update, [ :pointer, :string, :long ], :bool
-  attach_function :q_remove, :q_remove, [ :pointer, :string ], :bool
+  attach_function :q_reschedule, :q_reschedule, [ :pointer, :string, :long ], :bool
+  attach_function :q_cancel, :q_cancel, [ :pointer, :string ], :bool
   #attach_function :q_worker, :q_worker, [ :pointer, :string, :worker_delegate ], :void
   attach_function :q_worker, :q_worker, [ :pointer, :string, :pointer ], :void
   attach_function :q_observer, :q_observer, [ :pointer, :string, :observer_delegate ], :void
@@ -115,17 +115,17 @@ module Q
       puid.read_pointer.read_string
     end
     
-    def update(uid, run_at)
+    def reschedule(uid, run_at)
       throw "q disconnected" if !@pq
       throw "invalid arguments" if !uid
       run_at = run_at ? run_at.to_i : 0
-      Qlib::q_update(@pq, uid, run_at)
+      Qlib::q_reschedule(@pq, uid, run_at)
     end
     
-    def remove(uid)
+    def cancel(uid)
       throw "q disconnected" if !@pq
       throw "invalid arguments" if !uid
-      Qlib::q_remove(@pq, uid)
+      Qlib::q_cancel(@pq, uid)
     end
     
     def worker(channel, &delegate)

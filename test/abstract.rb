@@ -91,7 +91,7 @@ module Q
       sleep 3
       assert_equal(1, received)
       
-      q.update("test2", Time.now+4)
+      q.reschedule("test2", Time.now+4)
       
       sleep 3
       assert_equal(1, received)
@@ -124,7 +124,7 @@ module Q
       sleep 3
       assert_equal(1, received)
       
-      q.remove("test2")
+      q.cancel("test2")
       
       sleep 3
       assert_equal(1, received)
