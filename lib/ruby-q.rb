@@ -4,7 +4,7 @@ require 'json'
 module Qlib
   extend FFI::Library
   
-  ffi_lib 'libq'
+  ffi_lib 'libq-1.0'
   #ffi_convention :stdcall
   
   #callback :worker_delegate, [ :pointer ], :void
