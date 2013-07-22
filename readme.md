@@ -38,7 +38,7 @@ q bindings for ruby uses the ffi gem to bind to q's native API. q is represented
 
 * *worker(channel, &delegate):* register a worker [block] for a named queue (aka channel). the worker will start receiving jobs immediately.
 
-* *observer(channel, &delegate):* register an observer [block] for a named queue (aka channel). the observer will start receiving jobs immediately. the difference between an observer and a worker is that the observer is passive in nature and as such is being notified after a
+* *observer(channel, &delegate):* register an observer [block] for a named queue (aka channel). the observer will start receiving jobs immediately. the difference between an observer and a worker is that the observer is passive in nature and as such is notified only after a
 worker has completed the job successfully.
 
 * *drop:* careful, drops all queues! useful in development scenarios when you need to flush the entire queue system.
