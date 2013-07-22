@@ -17,7 +17,7 @@ module Q
       puts "using #{@connection_string}"
       
       q.connect(@connection_string)
-      q.flush
+      q.drop
       
       #puts "how many?"
       total = 1000 #gets.to_i
@@ -49,7 +49,7 @@ module Q
       puts "using #{@connection_string}"
       
       q.connect(@connection_string)
-      q.flush
+      q.drop
       
       received = 0
       q.worker("channel1") do |data| 
@@ -77,7 +77,7 @@ module Q
       puts "using #{@connection_string}"
       
       q.connect(@connection_string)
-      q.flush
+      q.drop
       
       received = 0
       q.worker("channel1") do |data| 
@@ -110,7 +110,7 @@ module Q
       puts "using #{@connection_string}"
       
       q.connect(@connection_string)
-      q.flush
+      q.drop
       
       received = 0
       q.worker("channel1") do |data| 

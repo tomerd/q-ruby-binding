@@ -19,7 +19,7 @@ module Qlib
   #attach_function :q_worker, :q_worker, [ :pointer, :string, :worker_delegate ], :void
   attach_function :q_worker, :q_worker, [ :pointer, :string, :pointer ], :void
   attach_function :q_observer, :q_observer, [ :pointer, :string, :observer_delegate ], :void
-  attach_function :q_flush, :q_flush, [ :pointer ], :void
+  attach_function :q_drop, :q_drop, [ :pointer ], :void
   
 end
 
@@ -152,10 +152,10 @@ module Q
       Qlib::q_observer(@pq, channel, observer)
     end
     
-    # careful, flushes the queue!
-    def flush
+    # careful, drops all queues!
+    def drop
       throw "q disconnected" if !@pq
-      Qlib::q_flush(@pq)
+      Qlib::q_drop(@pq)
     end
     
   end

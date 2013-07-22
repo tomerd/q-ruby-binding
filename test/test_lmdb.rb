@@ -2,7 +2,7 @@ require 'abstract.rb'
 
 module Q
   
-  class TestTransient < AbstractTestCase
+  class TestLmdb < AbstractTestCase
     
     def initialize(test_method_name)
       super(test_method_name)
