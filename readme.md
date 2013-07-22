@@ -17,8 +17,11 @@ see more about the core library at https://github.com/tomerd/q
 
 ### q bindings for ruby
 
+
+##### usage example
+
 	q = Q::Q.new
-        
+    
     puts "using q version #{q.version }"  
     
     q.connect
