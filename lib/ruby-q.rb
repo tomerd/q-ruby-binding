@@ -105,13 +105,13 @@ module Q
       @observers = []
     end
     
-    def post(channel, job)
+    def post(queue, job)
       throw "q disconnected" if !@pq
-      throw "invalid arguments" if !channel
+      throw "invalid arguments" if !queue
       throw "invalid arguments" if !job || !job.valid?
       puid = FFI::MemoryPointer.new(:pointer)
       run_at = job.run_at ? job.run_at.to_i : 0
-      Qlib::q_post(@pq, channel, job.uid, job.data, run_at, puid)
+      Qlib::q_post(@pq, queue, job.uid, job.data, run_at, puid)
       puid.read_pointer.read_string
     end
     
@@ -128,28 +128,28 @@ module Q
       Qlib::q_cancel(@pq, uid)
     end
     
-    def worker(channel, &delegate)
+    def worker(queue, &delegate)
       throw "q disconnected" if !@pq
-      throw "invalid arguments" if !channel
+      throw "invalid arguments" if !queue
       throw "invalid arguments" if !delegate
-      #Qlib::q_worker(@pq, channel) { |pdata| delegate.call(pdata.read_pointer.read_string) }
+      #Qlib::q_worker(@pq, queue) { |pdata| delegate.call(pdata.read_pointer.read_string) }
       worker =  FFI::Function.new(:void, [:pointer]) do |pdata|
         delegate.call(pdata.read_pointer.read_string)
       end
       @workers << worker
-      Qlib::q_worker(@pq, channel, worker)
+      Qlib::q_worker(@pq, queue, worker)
     end
     
-    def observer(channel, &delegate)
+    def observer(queue, &delegate)
       throw "q disconnected" if !@pq
-      throw "invalid arguments" if !channel
+      throw "invalid arguments" if !queue
       throw "invalid arguments" if !delegate      
-      #Qlib::q_observer(@pq, channel) { |pdata| delegate.call(pdata.read_pointer.read_string) }
+      #Qlib::q_observer(@pq, queue) { |pdata| delegate.call(pdata.read_pointer.read_string) }
       observer =  FFI::Function.new(:void, [:pointer]) do |pdata|
         delegate.call(pdata.read_pointer.read_string)
       end
       @observers << observer
-      Qlib::q_observer(@pq, channel, observer)
+      Qlib::q_observer(@pq, queue, observer)
     end
     
     # careful, drops all queues!

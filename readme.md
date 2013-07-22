@@ -25,7 +25,7 @@ q bindings for ruby uses the ffi gem to bind to q's native API. q is represented
 
 * *disconnect:* disconnect from the library. no further calls can be made after this.
 
-* *post(channel, job):*/ posts a job to a named queue (aka channel). a job is represented by the Q::Job class.
+* *post(queue, job):*/ posts a job to a named queue (aka channel). a job is represented by the Q::Job class.
 	
 	Q::Job consists of 3 fields:
 	+ uid (string, optional): a unique identifier for the job, useful if you plan on updating or rescheduling the job.
@@ -36,9 +36,9 @@ q bindings for ruby uses the ffi gem to bind to q's native API. q is represented
 
 * *cancel(uid):* cancel a scheduled jobs.
 
-* *worker(channel, &delegate):* register a worker [block] for a named queue (aka channel). the worker will start receiving jobs immediately.
+* *worker(queue, &delegate):* register a worker [block] for a named queue (aka channel). the worker will start receiving jobs immediately.
 
-* *observer(channel, &delegate):* register an observer [block] for a named queue (aka channel). the observer will start receiving jobs immediately. the difference between an observer and a worker is that the observer is passive in nature and as such is notified only after a
+* *observer(queue, &delegate):* register an observer [block] for a named queue (aka channel). the observer will start receiving jobs immediately. the difference between an observer and a worker is that the observer is passive in nature and as such is notified only after a
 worker has completed the job successfully.
 
 * *drop:* careful, drops all queues! useful in development scenarios when you need to flush the entire queue system.
